@@ -30,7 +30,6 @@ async function signUpService({ username, email, password }) {
       email: newUser.email,
       username: newUser.username,
     },
-    token, // retorna token para controller criar cookie
   };
 }
 
