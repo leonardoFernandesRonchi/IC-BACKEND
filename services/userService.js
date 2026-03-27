@@ -30,6 +30,7 @@ async function signUpService({ username, email, password }) {
       email: newUser.email,
       username: newUser.username,
     },
+    token,
   };
 }
 
@@ -51,7 +52,6 @@ async function signInService({ email, password }) {
       id: user.id,
       email: user.email,
       username: user.username,
-      token: token,
     },
     token, // retorna token para controller criar cookie HttpOnly
   };
