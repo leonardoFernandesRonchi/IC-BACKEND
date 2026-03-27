@@ -34,7 +34,7 @@ const logOut = async (req, res, next) => {
     res.clearCookie("token", {
       httpOnly: true,
       secure: true,
-      sameSite: "Strict",
+      sameSite: "none",
     });
     res.status(200).json({ message: "Deslogado com sucesso" });
   } catch (error) {
