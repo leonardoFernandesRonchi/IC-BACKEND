@@ -5,7 +5,7 @@ const verifyToken = async (req, res, next) => {
   try {
     let token = req.headers.authorization?.split(" ")[1];
 
-    if (!token && req.cookies?.token) {
+    if (!token && req.headers.cookie) {
       token = req.headers.cookie
         .split(";")
         .find((c) => c.trim().startsWith("token="))
@@ -24,16 +24,11 @@ const verifyToken = async (req, res, next) => {
       attributes: { exclude: ["password"] },
     });
 
-    if (!user) {
-      req.loggedUser = null;
-      return next();
-    }
-
-    req.loggedUser = user;
+    req.loggedUser = user || null;
     next();
   } catch (err) {
     req.loggedUser = null;
-    next(err);
+    next();
   }
 };
 
