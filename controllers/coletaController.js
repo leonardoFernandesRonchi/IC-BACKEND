@@ -1,18 +1,16 @@
-const {
-  createColetaService,
-  getUserColetasService,
-  deleteColetaService,
-} = require("@services/coletaService");
+const coletaService = require("@services/coletaService");
 
-const createColeta = async (req, res, next) => {
+
+const create = async (req, res, next) => {
   try {
-    const { latitude, longitude, description } = req.body;
+    const { latitude, longitude, description, coletaType } = req.body;
 
-    const coleta = await createColetaService({
+    const coleta = await coletaService.create({
       image: req.file?.filename,
       latitude,
       longitude,
       description,
+      coletaType,
       userId: req.loggedUser.id,
     });
 
@@ -22,20 +20,20 @@ const createColeta = async (req, res, next) => {
   }
 };
 
-const getMyColetas = async (req, res, next) => {
+const getAll = async (req, res, next) => {
   try {
-    const coletas = await getUserColetasService(req.loggedUser.id);
+    const coletas = await coletaService.getAll(req.loggedUser.id, req.query.coletaType);
     res.status(200).json(coletas);
   } catch (error) {
     next(error);
   }
 };
 
-const deleteColeta = async (req, res, next) => {
+const destroy = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    await deleteColetaService(id, req.loggedUser.id);
+    await coletaService.destroy(id, req.loggedUser.id);
 
     res.status(200).json({ message: "Coleta deleted" });
   } catch (error) {
@@ -44,7 +42,7 @@ const deleteColeta = async (req, res, next) => {
 };
 
 module.exports = {
-  createColeta,
-  getMyColetas,
-  deleteColeta,
+  create,
+  getAll,
+  destroy,
 };

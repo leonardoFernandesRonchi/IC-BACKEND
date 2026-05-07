@@ -3,15 +3,15 @@ const router = express.Router();
 const upload = require("@middlewares/upload");
 
 const {
-  createColeta,
-  getMyColetas,
-  deleteColeta,
+  create,
+  getAll,
+  destroy,
 } = require("@controllers/coletaController");
 
 const { verifyToken } = require("@middlewares/authentication");
 
-router.post("/", verifyToken, upload.single("image"), createColeta);
-router.get("/", verifyToken, getMyColetas);
-router.delete("/:id", verifyToken, deleteColeta);
+router.post("/", verifyToken, upload.single("image"), create);
+router.get("/", verifyToken, getAll);
+router.delete("/:id", verifyToken, destroy);
 
 module.exports = router;

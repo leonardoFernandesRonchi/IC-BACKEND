@@ -25,3 +25,6 @@ coverage/
 # IDE
 .vscode/
 .idea/
+.env
+.uploads/
+uploads

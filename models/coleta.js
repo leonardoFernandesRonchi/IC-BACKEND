@@ -15,6 +15,10 @@ module.exports = (sequelize, DataTypes) => {
       longitude: DataTypes.DOUBLE,
       description: DataTypes.STRING,
       userId: DataTypes.INTEGER,
+      coletaType: {
+        type: DataTypes.ENUM("Microscopica", "Colonia"),
+        allowNull: false,
+      },
     },
     {
       sequelize,
