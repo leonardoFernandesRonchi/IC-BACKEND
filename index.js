@@ -6,6 +6,7 @@ const express = require("express");
 const { sequelize } = require("./models");
 const usersRoutes = require("./routes/users");
 const coletaRoutes = require("./routes/coletas");
+const analiseRoutes = require("./routes/analises");
 const cookieParser = require("cookie-parser");
 
 const allowedOrigins = [
@@ -59,6 +60,7 @@ const errorHandler = (err, req, res, next) => {
 
 app.get("/", (req, res) => res.json({ status: "API is running on /api" }));
 app.use("/api/users", usersRoutes);
+app.use("/api/analises", analiseRoutes);
 app.use("/api/coletas", coletaRoutes);
 app.use(errorHandler);
 
