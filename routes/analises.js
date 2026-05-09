@@ -6,7 +6,7 @@ const storage = multer.memoryStorage();
 
 const upload = multer({ storage });
 
-const { criarAnalise } = require("@controllers/analiseController");
+const { criarAnalise, getAll } = require("@controllers/analiseController");
 
 const { verifyToken } = require("@middlewares/authentication");
 
@@ -19,5 +19,7 @@ router.post(
   ]),
   criarAnalise,
 );
+
+router.get("/", verifyToken, getAll);
 
 module.exports = router;

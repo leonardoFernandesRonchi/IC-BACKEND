@@ -1,16 +1,49 @@
 const axios = require("axios");
 const FormData = require("form-data");
+const fs = require("fs");
+const path = require("path");
+
+const { Coleta, AnaliseIA } = require("../models");
 
 const PYTHON_API_URL = "http://127.0.0.1:8000/api";
 
 const criarAnalise = async (req, res) => {
   try {
-    const { nome_amostra, descricao, usuario } = req.body;
+    const { nome_amostra, descricao, imagem_microscopica, imagem_colonia } =
+      req.body;
 
-    const microscopica = req.files.microscopica[0];
-    const colonia = req.files.colonia[0];
+    const { loggedUser } = req;
 
-    // 1. Criar análise
+    const usuario = loggedUser.id;
+
+    const microscopica_result = await Coleta.findByPk(imagem_microscopica);
+
+    const colonia_result = await Coleta.findByPk(imagem_colonia);
+
+    if (!microscopica_result || !colonia_result) {
+      return res.status(404).json({
+        erro: "Imagem não encontrada",
+      });
+    }
+
+    const microscopicaPath = path.join(
+      __dirname,
+      "..",
+      "uploads",
+      microscopica_result.image,
+    );
+
+    const coloniaPath = path.join(
+      __dirname,
+      "..",
+      "uploads",
+      colonia_result.image,
+    );
+
+    const microscopicaBuffer = fs.readFileSync(microscopicaPath);
+
+    const coloniaBuffer = fs.readFileSync(coloniaPath);
+
     const criarResponse = await axios.post(`${PYTHON_API_URL}/analises/`, {
       nome_amostra,
       descricao,
@@ -19,10 +52,9 @@ const criarAnalise = async (req, res) => {
 
     const analiseId = criarResponse.data.id;
 
-    // 2. Upload microscópica
     const microForm = new FormData();
 
-    microForm.append("imagem", microscopica.buffer, microscopica.originalname);
+    microForm.append("imagem", microscopicaBuffer, "microscopica.png");
 
     const microUploadResponse = await axios.post(
       `${PYTHON_API_URL}/analises/${analiseId}/microscopica/`,
@@ -32,13 +64,16 @@ const criarAnalise = async (req, res) => {
       },
     );
 
-    // AQUI ESTÁ O IMPORTANTE
+    const newAnalise = await AnaliseIA.create({
+      userId: usuario,
+      id_analise: microUploadResponse.data.id,
+    });
+
     const imagemId = microUploadResponse.data.id;
 
-    // 3. Upload colônia
     const coloniaForm = new FormData();
 
-    coloniaForm.append("imagem", colonia.buffer, colonia.originalname);
+    coloniaForm.append("imagem", coloniaBuffer, "colonia.png");
 
     await axios.post(
       `${PYTHON_API_URL}/analises/${analiseId}/colonia/`,
@@ -48,7 +83,6 @@ const criarAnalise = async (req, res) => {
       },
     );
 
-    // 4. Buscar estatísticas
     const processamento = await axios.get(
       `${PYTHON_API_URL}/analises/${imagemId}/levedura_segmentada/`,
     );
@@ -60,7 +94,7 @@ const criarAnalise = async (req, res) => {
       resultado: processamento.data,
     });
   } catch (error) {
-    console.error(error.response?.data || error.message);
+    console.error(error);
 
     return res.status(500).json({
       erro: "Erro ao processar análise",
@@ -68,6 +102,26 @@ const criarAnalise = async (req, res) => {
   }
 };
 
+const getAll = async (req, res) => {
+  try {
+    const analises = await AnaliseIA.findAll({
+      where: { userId: req.loggedUser.id },
+    });
+    for (const analise of analises) {
+      const resultado = await axios.get(
+        `${PYTHON_API_URL}/analises/${analise.id_analise}/levedura_segmentada/`,
+      );
+      analise.dataValues.resultado = resultado.data;
+    }
+    return res.json(analises);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      erro: "Erro ao buscar análises",
+    });
+  }
+};
 module.exports = {
   criarAnalise,
+  getAll,
 };
