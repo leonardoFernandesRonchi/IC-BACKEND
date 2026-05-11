@@ -45,6 +45,8 @@
     "@helpers": "helpers"
   },
   "devDependencies": {
+    "@babel/preset-env": "^7.29.5",
+    "babel-jest": "^30.4.1",
     "sequelize-cli": "^6.6.5"
   }
 }
